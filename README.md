@@ -123,3 +123,25 @@ public static boolean agregarLibro(Libro nuevoLibro){
     }
 ```
 
+## PASOS PARA IMPLEMENTAR UN GLIDE
+1. **Implementar las dependencias**
+```
+implementation ("com.github.bumptech.glide:glide:4.13.0")
+```
+2. **Activar el permiso de Internet**  
+Dentro del AndroidManifest pegar el permiso de internet
+```
+<uses-permission android:name="android.permission.INTERNET" />
+```
+3. **Usar el método de Glide donde sea necesario**  
+En caso de que estemos usando una imagen de una Api es importante tener en cuenta que hay que pasarle la URL completa, así que hay que concatenar la urlBase en muchos casos.
+```
+Glide.with(contexto).load(urlImagen).into(imageView);
+```
+```
+if(listado.get(position).getImagen() == null){
+            Glide.with(contexto).load("https://bookstoreromanceday.org/wp-content/uploads/2020/08/book-cover-placeholder.png").into(holder.imagen);
+        }else{
+            Glide.with(contexto).load(ApiConfig.UrlBase + listado.get(position).getImagen()).into(holder.imagen);
+        }
+```
