@@ -405,4 +405,5 @@ En Java, a la hora de comprobar los permisos que necesita la aplicación.
  En el momento en el que se quiera llamar a los permisos se llamará al método solicitarPermisos().
  A la hora de que necesitemos comprobar los permisos llamaremos al método onRequestPermissionsResult, pasándole el código de permiso correcto (en el primer bloque), el listado de permisos que queremos comprobar, y 
 
- ADJUNTAR PROYECTO DE PRACTICA DE CAMARA
+REPOSITORIO CON EL EJERCICIO DE LA CÁMARA:
+https://github.com/lausnchez/camara_repaso_moviles
