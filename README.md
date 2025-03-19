@@ -128,6 +128,11 @@ public static boolean agregarLibro(Libro nuevoLibro){
 ```
 implementation ("com.github.bumptech.glide:glide:4.13.0")
 ```
+Este segundo bloque es de David, la segunda línea es para optimizar la carga de imágenes.
+```
+implementation ("com.github.bumptech.glide:glide:4.12.0")
+annotationProcessor ("com.github.bumptech.glide:compiler:4.12.0")
+```
 2. **Activar el permiso de Internet**  
 Dentro del AndroidManifest pegar el permiso de internet
 ```
@@ -145,3 +150,138 @@ if(listado.get(position).getImagen() == null){
             Glide.with(contexto).load(ApiConfig.UrlBase + listado.get(position).getImagen()).into(holder.imagen);
         }
 ```
+
+## PASOS PARA IMPLEMENTAR UN RECYCLER VIEW
+1. **Crear el Recycler View**  
+Dentro del xml de una actividad (o un fragment) creamos un objeto de tipo RecyclerView.  
+Es necesario poner bien las constraints para que funcione bien.
+```
+<androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_autor"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginStart="1dp"
+        android:layout_marginTop="1dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+```
+2. **Crear in Item para el RecyclerView**
+Debe estar dentro de la carpeta de Layout.  
+ Esto es un ejemplo de un Item con un único TextView.
+
+ ```
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="16dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="4dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingLeft="5dp">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/lbl_listado_autor"
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:layout_marginTop="5dp"
+                android:width="230dp"
+                android:gravity="left"
+                android:paddingLeft="15dp"
+                android:paddingTop="12dp"
+                android:text="Autor"
+                android:textColor="@color/design_default_color_error"
+                android:textSize="17dp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>
+ ```
+
+ 3. **Crear un Adapter**  
+ Es necesario crear un adapter para poder conectar el RecyclerView a los datos y el item donde se van a mostrar.  
+ Esta plantilla tiene todo lo básico para generar una adapter desde 0, sólo hay que cambiar los nombres de la clase, el item, y el tipo de listado.
+ ```
+import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+import java.util.List;
+
+public class GenericAdapter extends RecyclerView.Adapter<GenericAdapter.GenericViewHolder> {
+    private static List<GenericItem> itemList;
+    private Context context;
+
+    public GenericAdapter(List<GenericItem> items, Context context) {
+        this.context = context;
+        this.itemList = items;
+        this.notifyDataSetChanged();
+    }
+
+    // Método para actualizar la lista de datos
+    public static void updateItemList(List<GenericItem> newList) {
+        GenericAdapter.itemList = newList;
+    }
+
+    @NonNull
+    @Override
+    public GenericViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_layout, parent, false);
+        return new GenericViewHolder(view);
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull GenericViewHolder holder, int position) {
+        holder.textView.setText(itemList.get(position).getText());
+    }
+
+    @Override
+    public int getItemCount() {
+        return this.itemList.size();
+    }
+
+    public static class GenericViewHolder extends RecyclerView.ViewHolder {
+        public TextView textView;
+
+        public GenericViewHolder(@NonNull View itemView) {
+            super(itemView);
+            textView = itemView.findViewById(R.id.text_view_id);
+        }
+    }
+}
+
+ ```
+
+ 4. **Configurar el RecyclerView dentro de la clase donde se vaya a usar**  
+Primero deberemos localizar el RecyclerView, y crear una instancia del adapter para asignáresela al RecyclerView. Preferiblemente asignaremos el Layout y la Decoration antes que el Adapter para evitar problemas de renderizado.
+ ```
+RecyclerView rView = vista.findViewById(R.id.recyclerView);
+
+RecyclerView.LayoutManager lManager = new LinearLayoutManager(contexto);
+rView.setLayoutManager(lManager);
+
+DividerItemDecoration deco = new DividerItemDecoration(contexto, DividerItemDecoration.VERTICAL);
+rView.addItemDecoration(deco);
+
+List<String> listado = response.body();
+Adapter adapter = new AdapterGenero(listado, contexto);
+rView.setAdapter(adapter);
+
+ ```
