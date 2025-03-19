@@ -285,3 +285,124 @@ Adapter adapter = new AdapterGenero(listado, contexto);
 rView.setAdapter(adapter);
 
  ```
+
+### COMO IMPLEMENTAR UNA CÁMARA Y PERMISOS
+```
+/*
+    COMENTARIO DE MI PROGRAMA ORIGINAL - NO HACER MUCHO CASO
+     *   Para poner una cámara! - PERMISOS
+     * ........................................................
+     *
+     *   > Definimos los permisos(string[]) <- Cámara, guardar fotos, y leer fotos (opcional)
+     *       Tenemos que ponerlos en el AndroidManifest y hacer la función que los define dentro de
+     *       la app.
+     *
+     *   > Pedimos los permisos(ActivityCompat.requestPermissions(actividad, permisos que
+     *     necesitamos, código de solicitud)) <- Cuando el usuario acepte los permisos nos devuelve ese
+     *     código para saber que ha respondido el usuario.
+     *
+     *   > Revisamos los permisos(onRequestPermissionResult()) Éste mét odo tiene que ser una @override
+     *     ya que es uno pre-hecho por el sistema.
+     *
+     *     Se pueden pedir y revisar los permisos de forma individual, pero el generar un String[] y
+     *     trabajar con él hace que sea más escalable a largo plazo y además es más rápido de programar.
+     *
+     *     Lo siguiente es crear la llamada a cámara y el provider
+     * */
+```
+
+1. **Implementar los permisos**  
+En el AndroidManifest (Estos son los permisos que usé yo y funcionan, David tiene otros en el PDF): 
+```
+<uses-permission android:name="android.permission.CAMERA" />
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+```
+
+2. **Verificar los permisos**  
+En Java, a la hora de comprobar los permisos que necesita la aplicación.  
+ - Listado de permisos que queremos pedir:
+```
+    private static final int CODIGO_SOLICITUD_PERMISOS = 10;
+    private String rutaFotoActual;
+
+    /** 
+     Delimita los permisos que queremos pedirle al usuario. 
+     Importante que al agregar permisos nuevos se use el Manifest de android.
+     **/
+
+    private static final String[] PERMISOS_REQUERIDOS = new String[]{
+            Manifest.permission.CAMERA,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.READ_EXTERNAL_STORAGE
+    };
+```
+ - Método para solicitar permisos:
+```
+/**
+     *  Maneja las llamadas para pedir los permisos al usuario
+     *  ActivityCompat.requestPermissions(
+     *                 contexto,
+     *                 Array de strings de permisos,
+     *                 Código en caso de que se acepte el permiso);
+     *
+     * Se llama a ésta función donde querramos pedir los permisos
+     */
+
+    private void solicitarPermisos() {
+        ActivityCompat.requestPermissions(
+                this,
+                PERMISOS_REQUERIDOS,
+                CODIGO_SOLICITUD_PERMISOS
+        );
+    }
+```
+ - Comprobar si se han concedido todos los permisos necesarios:
+ ```
+    /**
+     * Verifica si los permisos se han concedido a la aplicación. Recorre el array de Strings
+     * generado por la función anterior con todos los permisos que queremos pedir al usuario.
+     *
+     * @return true si se han concedido todos los permisos
+     */
+
+    private boolean todosPermisosConcedidos() {
+        for (String permiso : PERMISOS_REQUERIDOS) {
+            if (ContextCompat.checkSelfPermission(this, permiso) != PackageManager.PERMISSION_GRANTED) {
+                return false;
+            }
+        }
+        return true;
+    }
+```
+
+ - Manejar las solicitudes de permisos al usuario (Importante el @Override):
+ ```
+    /**
+     * Maneja las solicitudes de permisos que hayamos pedido al usuario anteriormente.
+     *
+     * @param requestCode Código de solicitud de permisos (nos dice la respuesta del usuario)
+     * @param permissions Lista de permisos pedidos al usuario
+     * @param grantResults Resultados de la solicitud de permisos
+     */
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[]
+            grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == CODIGO_SOLICITUD_PERMISOS) {
+            if (todosPermisosConcedidos()) {
+                // En caso de que se acepten los permisos
+                Toast.makeText(this, "Se han concedido los permisos", Toast.LENGTH_SHORT).show();
+            } else {
+                // En caso de que no se acepten los permisos
+                Toast.makeText(this, "No se han concedido los permisos", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+ ```
+
+ En el momento en el que se quiera llamar a los permisos se llamará al método solicitarPermisos().
+ A la hora de que necesitemos comprobar los permisos llamaremos al método onRequestPermissionsResult, pasándole el código de permiso correcto (en el primer bloque), el listado de permisos que queremos comprobar, y 
+
+ ADJUNTAR PROYECTO DE PRACTICA DE CAMARA
